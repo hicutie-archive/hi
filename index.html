@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cutiepie</title>
+    <style>
+        /* --------------------------------------------------
+           👉 CHANGE YOUR SECRET MESSAGE HERE 👈
+        -------------------------------------------------- */
+        :root {
+            --secret-message: "Kire kutte..! Soril ar ki obosta..? Tor jonnoi bananu aida😒.. Mone rakis kutia j tor fnd tor jonne amon jinis banaicilo😃... posondo hole save kore rakis";
+            --pink-bg-color: #ffc2d1;
+        }
+
+        /* Reset and Background */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: linear-gradient(135deg, #ffe5ec, var(--pink-bg-color));
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Container */
+        .scene {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Borderless/Bubbleless Text Container */
+        .speech-bubble {
+            background: transparent; /* Removed bubble background */
+            padding: 15px 25px;
+            font-size: 1.4rem; /* Slightly larger for better readability */
+            font-weight: bold;
+            color: #ff4d6d;
+            margin-bottom: 40px;
+            position: relative;
+            animation: floatBubble 3s ease-in-out infinite;
+            pointer-events: none;
+            max-width: 320px;
+            text-align: center;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px; /* Space between words */
+            text-shadow: 0 2px 4px rgba(255, 255, 255, 0.6); /* Soft glow so text pops */
+            
+            /* Hidden by default until holding */
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        /* Revealed class triggered by JS */
+        .speech-bubble.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Smooth "Slipping" Word Animation */
+        .word {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(15px) scale(0.9);
+            animation: slipIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.15) forwards;
+        }
+
+        /* The Cartoon Character */
+        .character {
+            width: 140px;
+            height: 160px;
+            background: #ffffff;
+            border-radius: 70px 70px 20px 20px;
+            position: relative;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            animation: bounce 3s ease-in-out infinite;
+            z-index: 2;
+            touch-action: none;
+        }
+
+        /* Kissing state */
+        .character.kissing {
+            animation: rapidKiss 0.4s ease-in-out;
+        }
+
+        /* Eyes */
+        .eyes {
+            position: absolute;
+            top: 45%;
+            width: 80px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .eye {
+            width: 16px;
+            height: 16px;
+            background: #2b2d42;
+            border-radius: 50%;
+            position: relative;
+            animation: blink 4s infinite;
+        }
+
+        .character.kissing .eye {
+            height: 5px;
+            border-radius: 0;
+            background: transparent;
+            border-top: 4px solid #2b2d42;
+            animation: none;
+            transform: rotate(-10deg);
+        }
+        .character.kissing .eye:last-child {
+            transform: rotate(10deg);
+        }
+
+        .eye::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 5px;
+            height: 5px;
+            background: white;
+            border-radius: 50%;
+        }
+        .character.kissing .eye::after { display: none; }
+
+        /* Blush Cheeks */
+        .cheeks {
+            position: absolute;
+            top: 55%;
+            width: 110px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .cheek {
+            width: 18px;
+            height: 10px;
+            background: #ffb3c1;
+            border-radius: 50%;
+            opacity: 0.8;
+        }
+
+        /* Mouth */
+        .mouth {
+            width: 20px;
+            height: 10px;
+            border-bottom: 4px solid #2b2d42;
+            border-radius: 0 0 10px 10px;
+            position: absolute;
+            top: 55%;
+        }
+
+        .character.kissing .mouth {
+            width: 12px;
+            height: 14px;
+            border: 4px solid #2b2d42;
+            border-right: none;
+            border-radius: 10px 0 0 10px;
+            transform: rotate(-90deg);
+            background: transparent;
+            top: 52%;
+        }
+
+        /* Shadow */
+        .shadow {
+            width: 100px;
+            height: 12px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            margin-top: 20px;
+            animation: shadowScale 3s ease-in-out infinite;
+        }
+
+        /* 💘 Floating Heart Emojis */
+        .heart-emoji {
+            position: absolute;
+            font-size: 2rem;
+            background: linear-gradient(var(--pink-bg-color), var(--pink-bg-color));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.15)); 
+            pointer-events: none;
+            z-index: 3;
+            animation: floatHeart 0.8s ease-out forwards;
+        }
+
+        /* --------------------------------------------------
+           Animations
+        -------------------------------------------------- */
+        @keyframes slipIn {
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0) scaleY(1); }
+            50% { transform: translateY(-20px) scaleY(1.03); }
+        }
+
+        @keyframes rapidKiss {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.15) translateY(-10px); }
+            70% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes floatBubble {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes shadowScale {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(0.8); opacity: 0.5; }
+        }
+
+        @keyframes blink {
+            0%, 90%, 100% { transform: scaleY(1); }
+            95% { transform: scaleY(0.1); }
+        }
+
+        @keyframes floatHeart {
+            0% { opacity: 0; transform: translate(0, 0) scale(0.5); }
+            15% { opacity: 1; }
+            100% { opacity: 0; transform: translate(var(--x-dest), var(--y-dest)) scale(1.3) rotate(var(--r-dest)); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="scene">
+        <div class="speech-bubble" id="speechBubble"></div>
+
+        <div class="character" id="cartoonCharacter">
+            <div class="eyes">
+                <div class="eye"></div>
+                <div class="eye"></div>
+            </div>
+            <div class="cheeks">
+                <div class="cheek"></div>
+                <div class="cheek"></div>
+            </div>
+            <div class="mouth"></div>
+        </div>
+
+        <div class="shadow"></div>
+    </div>
+
+    <script>
+        const character = document.getElementById('cartoonCharacter');
+        const bubble = document.getElementById('speechBubble');
+
+        // Read the message from CSS
+        const fullMessage = getComputedStyle(document.documentElement).getPropertyValue('--secret-message').replace(/"/g, '').trim();
+        const wordsArray = fullMessage.split(' ');
+        
+        let typingInterval = null;
+        let currentWordIndex = 0;
+
+        function startHolding(e) {
+            if (e) e.preventDefault();
+
+            // Fire kiss effect
+            character.classList.add('kissing');
+            for (let i = 0; i < 5; i++) {
+                createHeart();
+            }
+            setTimeout(() => character.classList.remove('kissing'), 400);
+
+            // Clear previous states
+            stopHolding(); 
+            bubble.classList.add('show');
+            bubble.innerHTML = '';
+            currentWordIndex = 0;
+
+            // Generate words with individual slip animations (320ms per word)
+            typingInterval = setInterval(() => {
+                if (currentWordIndex < wordsArray.length) {
+                    const wordSpan = document.createElement('span');
+                    wordSpan.classList.add('word');
+                    wordSpan.innerText = wordsArray[currentWordIndex];
+                    
+                    bubble.appendChild(wordSpan);
+                    currentWordIndex++;
+                } else {
+                    clearInterval(typingInterval);
+                }
+            }, 320); 
+        }
+
+        function stopHolding() {
+            clearInterval(typingInterval);
+            bubble.classList.remove('show');
+            bubble.innerHTML = '';
+        }
+
+        // Mouse Controls
+        character.addEventListener('mousedown', startHolding);
+        window.addEventListener('mouseup', stopHolding);
+
+        // Touch Controls
+        character.addEventListener('touchstart', startHolding);
+        window.addEventListener('touchend', stopHolding);
+        window.addEventListener('touchcancel', stopHolding);
+
+        // Heart generation helper
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.classList.add('heart-emoji');
+            
+            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            heart.innerText = alphabet[Math.floor(Math.random() * alphabet.length)];
+
+            heart.style.left = '60px'; 
+            heart.style.top = '85px';
+
+            const xDestination = (Math.random() * 160 - 80) + 'px';
+            const yDestination = -(Math.random() * 120 + 60) + 'px';
+            const rotationDestination = (Math.random() * 60 - 30) + 'deg';
+
+            heart.style.setProperty('--x-dest', xDestination);
+            heart.style.setProperty('--y-dest', yDestination);
+            heart.style.setProperty('--r-dest', rotationDestination);
+
+            character.appendChild(heart);
+
+            setTimeout(() => heart.remove(), 800);
+        }
+    </script>
+
+</body>
+</html>
